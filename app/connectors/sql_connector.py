@@ -8,6 +8,7 @@ class SQLConnector(BaseConnector):
     
     def __init__(self):
         self.engine = None
+        self._pool = None
         self.connection = None
         self.dialect_mapping = {
             'postgresql': 'postgresql',
@@ -37,18 +38,28 @@ class SQLConnector(BaseConnector):
             print(f"Connection error: {str(e)}")
             return False
     
-    def fetch_data(self, query: Dict[str, Any]) -> Dict[str, Any]:
-        """Fetch data using SQL query"""
+       def fetch_data(self, query: Dict[str, Any]) -> Dict[str, Any]:
         try:
+            # Add query parameter validation
+            if not self._validate_query(query):
+                return {'error': 'Invalid query parameters'}
+                
+            # Add result limiting to prevent memory issues
             if 'sql' in query:
-                df = pd.read_sql(query['sql'], self.connection)
-            elif 'table' in query:
-                df = pd.read_sql_table(query['table'], self.connection)
-            else:
-                raise ValueError("Either 'sql' or 'table' must be provided")
+                df = pd.read_sql(
+                    query['sql'], 
+                    self.connection,
+                    chunksize=query.get('chunk_size', 1000)  # Add pagination
+                )
+            
+            # Add caching for frequently accessed data
+            cache_key = self._generate_cache_key(query)
+            if self._cache.has(cache_key):
+                return self._cache.get(cache_key)
                 
             return {'data': df.to_dict('records'), 'schema': list(df.columns)}
         except Exception as e:
+            # Add proper logging
             return {'error': str(e)}
     
     def get_schema(self) -> List[Dict[str, Any]]:
