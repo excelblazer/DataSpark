@@ -1,0 +1,189 @@
+import React, { useState } from 'react';
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Grid,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Typography,
+} from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
+import Plot from 'react-plotly.js';
+import { Error as ErrorIcon, Warning as WarningIcon } from '@mui/icons-material';
+
+const AnomalyDetection: React.FC = () => {
+  const [fileData, setFileData] = useState<File | null>(null);
+
+  const detectAnomaliesMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await axios.post('/api/analysis/detect_anomalies', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    },
+  });
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setFileData(event.target.files[0]);
+    }
+  };
+
+  const handleDetectAnomalies = () => {
+    if (!fileData) return;
+
+    const formData = new FormData();
+    formData.append('file', fileData);
+    detectAnomaliesMutation.mutate(formData);
+  };
+
+  return (
+    <Box>
+      <Typography variant="h4" gutterBottom>
+        Anomaly Detection & Data Quality
+      </Typography>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Data Upload
+              </Typography>
+              <Box mb={2}>
+                <input
+                  accept=".csv,.xlsx,.json"
+                  style={{ display: 'none' }}
+                  id="anomaly-file-upload"
+                  type="file"
+                  onChange={handleFileChange}
+                />
+                <label htmlFor="anomaly-file-upload">
+                  <Button
+                    variant="contained"
+                    component="span"
+                    fullWidth
+                  >
+                    Upload Data File
+                  </Button>
+                </label>
+              </Box>
+              
+              {fileData && (
+                <Typography variant="body2" gutterBottom>
+                  Selected file: {fileData.name}
+                </Typography>
+              )}
+
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                sx={{ mt: 2 }}
+                onClick={handleDetectAnomalies}
+                disabled={!fileData || detectAnomaliesMutation.isLoading}
+              >
+                {detectAnomaliesMutation.isLoading ? <CircularProgress size={24} /> : 'Detect Anomalies'}
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ p: 2 }}>
+            {detectAnomaliesMutation.isLoading ? (
+              <Box display="flex" justifyContent="center" alignItems="center" height="300px">
+                <CircularProgress />
+              </Box>
+            ) : detectAnomaliesMutation.isError ? (
+              <Alert severity="error">
+                <AlertTitle>Error</AlertTitle>
+                Error detecting anomalies: {detectAnomaliesMutation.error.message}
+              </Alert>
+            ) : detectAnomaliesMutation.data ? (
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Anomaly Detection Results
+                </Typography>
+
+                {detectAnomaliesMutation.data.threshold_exceeded && (
+                  <Alert severity="warning" sx={{ mb: 2 }}>
+                    <AlertTitle>Anomalies Detected</AlertTitle>
+                    Found {detectAnomaliesMutation.data.anomaly_count} anomalies ({detectAnomaliesMutation.data.anomaly_percentage.toFixed(1)}% of data)
+                  </Alert>
+                )}
+
+                <Plot
+                  data={[
+                    {
+                      y: detectAnomaliesMutation.data.data_values || [],
+                      mode: 'markers',
+                      type: 'scatter',
+                      marker: {
+                        color: detectAnomaliesMutation.data.anomalies.map((val: number) => 
+                          val === -1 ? '#dc004e' : '#1976d2'
+                        ),
+                        size: detectAnomaliesMutation.data.anomalies.map((val: number) => 
+                          val === -1 ? 10 : 6
+                        ),
+                      },
+                      name: 'Data Points',
+                    },
+                  ]}
+                  layout={{
+                    autosize: true,
+                    height: 300,
+                    title: 'Data Points with Anomalies Highlighted',
+                    margin: { l: 50, r: 50, t: 50, b: 50 },
+                    hovermode: 'closest',
+                  }}
+                  useResizeHandler
+                  style={{ width: '100%' }}
+                />
+
+                <Box mt={3}>
+                  <Typography variant="h6" gutterBottom>
+                    Alerts & Recommendations
+                  </Typography>
+                  
+                  <List>
+                    {detectAnomaliesMutation.data.alerts?.map((alert: any, index: number) => (
+                      <ListItem key={index} sx={{ bgcolor: alert.level === 'error' ? 'error.light' : 'warning.light', mb: 1, borderRadius: 1 }}>
+                        <ListItemIcon>
+                          {alert.level === 'error' ? <ErrorIcon color="error" /> : <WarningIcon color="warning" />}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={alert.message}
+                          secondary={alert.recommendation || ''}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </Box>
+            ) : (
+              <Box display="flex" justifyContent="center" alignItems="center" height="300px">
+                <Typography variant="body1">
+                  Upload data to detect anomalies and quality issues
+                </Typography>
+              </Box>
+            )}
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+export default AnomalyDetection;

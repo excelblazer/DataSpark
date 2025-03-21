@@ -1,0 +1,119 @@
+{
+  "permissions": {
+    "data_view": {
+      "description": "View data within the system",
+      "resource_type": "data",
+      "action": "view"
+    },
+    "data_edit": {
+      "description": "Edit data within the system",
+      "resource_type": "data",
+      "action": "edit"
+    },
+    "data_create": {
+      "description": "Create new data within the system",
+      "resource_type": "data",
+      "action": "create"
+    },
+    "data_delete": {
+      "description": "Delete data from the system",
+      "resource_type": "data",
+      "action": "delete"
+    },
+    "report_view": {
+      "description": "View reports",
+      "resource_type": "report",
+      "action": "view"
+    },
+    "report_create": {
+      "description": "Create reports",
+      "resource_type": "report",
+      "action": "create"
+    },
+    "report_edit": {
+      "description": "Edit reports",
+      "resource_type": "report",
+      "action": "edit"
+    },
+    "report_delete": {
+      "description": "Delete reports",
+      "resource_type": "report",
+      "action": "delete"
+    },
+    "dashboard_view": {
+      "description": "View dashboards",
+      "resource_type": "dashboard",
+      "action": "view"
+    },
+    "dashboard_create": {
+      "description": "Create dashboards",
+      "resource_type": "dashboard",
+      "action": "create"
+    },
+    "dashboard_edit": {
+      "description": "Edit dashboards",
+      "resource_type": "dashboard",
+      "action": "edit"
+    },
+    "dashboard_delete": {
+      "description": "Delete dashboards",
+      "resource_type": "dashboard",
+      "action": "delete"
+    },
+    "analytics_basic": {
+      "description": "Run basic analytics functions",
+      "resource_type": "analytics",
+      "action": "run_basic"
+    },
+    "analytics_advanced": {
+      "description": "Run advanced analytics functions",
+      "resource_type": "analytics",
+      "action": "run_advanced"
+    },
+    "department_data_view": {
+      "description": "View data within a department",
+      "resource_type": "department_data",
+      "action": "view"
+    },
+    "department_data_edit": {
+      "description": "Edit data within a department",
+      "resource_type": "department_data",
+      "action": "edit"
+    },
+    "cross_department_view": {
+      "description": "View data across multiple departments",
+      "resource_type": "cross_department_data",
+      "action": "view"
+    },
+    "cross_department_edit": {
+      "description": "Edit data across multiple departments",
+      "resource_type": "cross_department_data",
+      "action": "edit"
+    },
+    "executive_view": {
+      "description": "View executive-level data and insights",
+      "resource_type": "executive_data",
+      "action": "view"
+    },
+    "user_manage": {
+      "description": "Manage user accounts",
+      "resource_type": "user",
+      "action": "manage"
+    },
+    "role_manage": {
+      "description": "Manage user roles",
+      "resource_type": "role",
+      "action": "manage"
+    },
+    "system_configure": {
+      "description": "Configure system settings",
+      "resource_type": "system",
+      "action": "configure"
+    },
+    "module_access": {
+      "description": "Access specific module types",
+      "resource_type": "module",
+      "action": "access"
+    }
+  }
+}
